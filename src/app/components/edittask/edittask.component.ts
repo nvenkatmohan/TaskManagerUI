@@ -13,7 +13,8 @@ import { Task } from '../../model/task.model';
 })
 export class EdittaskComponent implements OnInit {
 
-  taskList: Array<Task> = []
+  taskList: Array<Task> = [];
+  nonDeletedTaskList: Array<Task> = [];
   priorityList: Array<any> = [];
 
   taskToUpdate: Task = new Task();
@@ -37,6 +38,8 @@ export class EdittaskComponent implements OnInit {
   task_parent_str: string;
   task_stdt_str: string;
   task_enddt_str: string;
+
+  prev_task_parent_str: string;
 
   constructor(fb: FormBuilder, private taskService: TaskService, private router: Router,
     private route: ActivatedRoute) {
@@ -96,15 +99,19 @@ export class EdittaskComponent implements OnInit {
         this.task_stdt.setValue(this.taskToUpdate.startDateStr);
         this.task_enddt.setValue(this.taskToUpdate.endDateStr);
 
-      });         
+        this.prev_task_parent_str = this.taskToUpdate.parentTaskName;
+
+      });   
+
+         
   }
 
   // Fetch all the tasks
   fetchAllTasks() {
     this.taskService.fetchAllTasks()
       .then(data => {
-        this.taskList = data
-      })
+        this.taskList = data;        
+      });          
   }
 
   // Update the task
@@ -117,10 +124,7 @@ export class EdittaskComponent implements OnInit {
     this.task_parent_str = this.task_parent.value;
     this.task_stdt_str = this.task_stdt.value;
     this.task_enddt_str = this.task_enddt.value;
-
-    console.log('Task is:::: ' +this.task_name.value);
-    console.log('Parent Task String is:::: "' +this.task_parent_str+'"');
-
+    
     if(this.myFrmGrp.invalid) {    
         return;
     }
@@ -149,10 +153,13 @@ export class EdittaskComponent implements OnInit {
 
     this.taskToUpdate.deleteFlag = 'N';
 
+    
 
-    if ('' !== parentStr && 'Please Select' != parentStr) {
+    if ('' !== parentStr && 'Please Select' != parentStr && 
+          this.prev_task_parent_str != parentStr) {
+
       let task1 = JSON.parse(parentStr);
-      this.parTask = task1 as Task;
+      this.parTask = task1 as Task;      
 
       this.taskToUpdate.parentId = this.parTask.taskId;
       this.taskToUpdate.parentTaskName = this.parTask.task;
